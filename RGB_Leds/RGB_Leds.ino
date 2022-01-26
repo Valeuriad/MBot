@@ -10,11 +10,11 @@ MeLightSensor lightsensor_12(12);
 MeRGBLed rgbled_0(0, 12);
 
 void _delay(float seconds) {
-  if(seconds < 0.0){
+  if (seconds < 0.0) {
     seconds = 0.0;
   }
   long endTime = millis() + seconds * 1000;
-  while(millis() < endTime) _loop();
+  while (millis() < endTime) _loop();
 }
 
 void setup() {
@@ -22,82 +22,82 @@ void setup() {
   rgbled_0.setpin(44);
   rgbled_0.fillPixelsBak(0, 2, 1);
 
-  rgbled_0.setColor(0,255,0,0);
+  rgbled_0.setColor(0, 255, 0, 0);
   rgbled_0.show();
   _delay(1);
-  rgbled_0.setColor(0,0,0,0);
+  rgbled_0.setColor(0, 0, 0, 0);
   rgbled_0.show();
 
-  rgbled_0.setColor(0,0,182,255);
+  rgbled_0.setColor(0, 0, 182, 255);
   rgbled_0.show();
   _delay(1);
-  rgbled_0.setColor(0,0,0,0);
+  rgbled_0.setColor(0, 0, 0, 0);
   rgbled_0.show();
 
-  rgbled_0.setColor(0,255,0,0);
+  rgbled_0.setColor(0, 255, 0, 0);
   rgbled_0.show();
   _delay(1);
-  rgbled_0.setColor(0,0,0,0);
+  rgbled_0.setColor(0, 0, 0, 0);
   rgbled_0.show();
 
-  rgbled_0.setColor(1,255,0,0);
+  rgbled_0.setColor(1, 255, 0, 0);
   rgbled_0.show();
   _delay(1);
-  rgbled_0.setColor(1,0,0,0);
+  rgbled_0.setColor(1, 0, 0, 0);
   rgbled_0.show();
 
-  rgbled_0.setColor(2,255,0,0);
+  rgbled_0.setColor(2, 255, 0, 0);
   rgbled_0.show();
   _delay(1);
-  rgbled_0.setColor(2,0,0,0);
+  rgbled_0.setColor(2, 0, 0, 0);
   rgbled_0.show();
 
-  rgbled_0.setColor(3,255,0,0);
+  rgbled_0.setColor(3, 255, 0, 0);
   rgbled_0.show();
   _delay(1);
-  rgbled_0.setColor(3,0,0,0);
+  rgbled_0.setColor(3, 0, 0, 0);
   rgbled_0.show();
 
-  rgbled_0.setColor(4,255,0,0);
+  rgbled_0.setColor(4, 255, 0, 0);
   rgbled_0.show();
   _delay(1);
-  rgbled_0.setColor(4,0,0,0);
+  rgbled_0.setColor(4, 0, 0, 0);
   rgbled_0.show();
 
-  rgbled_0.setColor(5,255,0,0);
+  rgbled_0.setColor(5, 255, 0, 0);
   rgbled_0.show();
   _delay(1);
-  rgbled_0.setColor(5,0,0,0);
+  rgbled_0.setColor(5, 0, 0, 0);
   rgbled_0.show();
 
-  rgbled_0.setColor(6,255,0,0);
+  rgbled_0.setColor(6, 255, 0, 0);
   rgbled_0.show();
   _delay(1);
-  rgbled_0.setColor(6,0,0,0);
+  rgbled_0.setColor(6, 0, 0, 0);
   rgbled_0.show();
 
-  rgbled_0.setColor(7,255,0,0);
+  rgbled_0.setColor(7, 255, 0, 0);
   rgbled_0.show();
   _delay(1);
-  rgbled_0.setColor(7,0,0,0);
+  rgbled_0.setColor(7, 0, 0, 0);
   rgbled_0.show();
 
-  rgbled_0.setColor(8,255,0,0);
+  rgbled_0.setColor(8, 255, 0, 0);
   rgbled_0.show();
   _delay(1);
-  rgbled_0.setColor(8,0,0,0);
+  rgbled_0.setColor(8, 0, 0, 0);
   rgbled_0.show();
 
-  rgbled_0.setColor(9,255,0,0);
+  rgbled_0.setColor(9, 255, 0, 0);
   rgbled_0.show();
   _delay(1);
-  rgbled_0.setColor(9,0,0,0);
+  rgbled_0.setColor(9, 0, 0, 0);
   rgbled_0.show();
 
-  rgbled_0.setColor(10,255,0,0);
+  rgbled_0.setColor(10, 255, 0, 0);
   rgbled_0.show();
   _delay(1);
-  rgbled_0.setColor(10,0,0,0);
+  rgbled_0.setColor(10, 0, 0, 0);
   rgbled_0.show();
 
 }
