@@ -16,20 +16,15 @@ int GAUCHE = 3;
 int DROITE = 4;
 int MARCHE_ARRIERE = 2;
 
-float vitesse;
-int dernierInstantCalculVitesse;
-int nombreScanVolumeSonore;
-int moyenneVolumeSonore;
-int distance;
-
 MeLightSensor lightsensor_12(12);
 MeLineFollower capteurLigne(9);
-MeSoundSensor capteurSon(14);
 MeEncoderOnBoard Encoder_1(SLOT1);
 MeEncoderOnBoard Encoder_2(SLOT2);
 MeUltrasonicSensor capteurObstacle(10);
 MeBuzzer buzzer;
 MeRGBLed led(0, 12);
+
+int HEURE_ARRET = 0;
 
 void debug(String message) {
   Serial.print(message);
@@ -85,72 +80,29 @@ int etat_de_la_ligne() {
   return capteurLigne.readSensors();
 }
 
-int recuperer_volume_sonore() {
-  return capteurSon.strength();
-}
-
 int recuperer_distance() {
   return capteurObstacle.distanceCm();
 }
 
-void colorer_leds(int rouge, int vert, int bleu) {
-    led.setColor(0, rouge, vert, bleu);
-    led.setColor(1, rouge, vert, bleu);
-    led.setColor(2, rouge, vert, bleu);
-    led.setColor(3, rouge, vert, bleu);
-    led.setColor(4, rouge, vert, bleu);
-    led.setColor(5, rouge, vert, bleu);
-    led.setColor(6, rouge, vert, bleu);
-    led.setColor(7, rouge, vert, bleu);
-    led.setColor(8, rouge, vert, bleu);
-    led.setColor(9, rouge, vert, bleu);
-    led.setColor(10, rouge, vert, bleu);
-    led.setColor(11, rouge, vert, bleu);
-    led.show();
+void colorer_leds(int rouge, int vert, int bleu, int nombreDeLeds) {
+  for(int numeroLed = 0; numeroLed < nombreDeLeds; numeroLed++) {
+    led.setColor(numeroLed, rouge, vert, bleu);
+  }
+  for(int numeroLed = nombreDeLeds; numeroLed < 12; numeroLed++) {
+    led.setColor(numeroLed, 0, 0, 0);
+  }
+  led.show();
 }
 
-void calculer_vitesse() {
-  //buzzer.tone(0, );
-  
-  if(millis() - dernierInstantCalculVitesse > 3000) {
-    debug(String(moyenneVolumeSonore));
-    
-    if(moyenneVolumeSonore > 400) {
-      vitesse = 255;
-    } else if(moyenneVolumeSonore > 250) {
-      vitesse = 200;
-    } else {
-      vitesse = 150;
-    }
-    debug(String(vitesse));
-    dernierInstantCalculVitesse = millis();
-    moyenneVolumeSonore = recuperer_volume_sonore();
-    nombreScanVolumeSonore = 0;
-  } else {
-    nombreScanVolumeSonore++;
-    float a = 1.0 / nombreScanVolumeSonore;
-    float b = 1.0 - a;
-    moyenneVolumeSonore = a * recuperer_volume_sonore() + b * moyenneVolumeSonore;
+int calculer_temps_arret() {
+  if(HEURE_ARRET == 0) {
+    HEURE_ARRET = millis();
   }
-
-  distance = recuperer_distance();
-  debug("Distance");
-  debug(String(distance));
-  if(distance < 10){
-    vitesse = 0;
-    // Allumer le klaxon
-    buzzer.tone(500, 1000);
-  } else if (distance < 20) {
-    vitesse = 150;
-    // Allumer les phares
-    colorer_leds(255, 255, 255);
-  } else {
-    // L'obstacle est trop loin. Il n'y a plus de risque !
-    colorer_leds(0, 0, 0);
-  }
+  return (millis() - HEURE_ARRET) / 1000;
 }
 
 void setup() {
+  //Serial.end();
   Serial.begin(115200);
   Encoder_1.reset(SLOT1);
   Encoder_2.reset(SLOT2);
@@ -164,43 +116,72 @@ void setup() {
   TCCR1B = _BV(CS11) | _BV(WGM12);
   TCCR2A = _BV(WGM21) | _BV(WGM20);
   TCCR2B = _BV(CS21);
-  
-  // these interrupts are necesssary to
-  // enable the motor to know where it is
-  //attachInterrupt(Encoder_1.getIntNum(), isr_process_encoder1, RISING);
-  //attachInterrupt(Encoder_2.getIntNum(), isr_process_encoder2, RISING);
-
-  dernierInstantCalculVitesse = millis();
-  nombreScanVolumeSonore = 0;
-  moyenneVolumeSonore = recuperer_volume_sonore();
 }
 
 void loop() {
-  calculer_vitesse();
-  if(etat_de_la_ligne() == GAUCHE_BLANC_DROIT_BLANC){
-    //debug("[Gauche] BLANC / [Droit] BLANC");
-    //debug("Direction : Tout droit");
-    se_deplacer(TOUT_DROIT, vitesse);
-  }else{
-    if(etat_de_la_ligne() == GAUCHE_NOIR_DROIT_BLANC){
-      //debug("[Gauche] NOIR / [Droit] BLANC");
-      //debug("Direction : A droite");
-      se_deplacer(DROITE, vitesse);
-    }else{
-      if(etat_de_la_ligne() == GAUCHE_BLANC_DROIT_NOIR){
-        //debug("[Gauche] BLANC / [Droit] NOIR");
-        //debug("Direction : A gauche");
-        se_deplacer(GAUCHE, vitesse);
-      }else{
-        //debug("[Gauche] NOIR / [Droit] NOIR");
-        //debug("Direction : On s arrete");
-        //Encoder_1.setTarPWM(0);
-        //Encoder_2.setTarPWM(0);
-        se_deplacer(MARCHE_ARRIERE, vitesse);
-        colorer_leds(255, 0, 0);
+  
+  float vitesse;
+  int distance = recuperer_distance();
+  int direction = TOUT_DROIT;
+  boolean allumerPhares = false;
+  boolean allumerFeuxRecul = false;
+
+  if(etat_de_la_ligne() == GAUCHE_BLANC_DROIT_BLANC) {
+    direction = TOUT_DROIT;
+    vitesse = 150;
+  } 
+  else {
+    if(etat_de_la_ligne() == GAUCHE_NOIR_DROIT_BLANC) {
+      direction = DROITE;
+      vitesse = 120;
+    } 
+    else {
+      if(etat_de_la_ligne() == GAUCHE_BLANC_DROIT_NOIR) {
+        direction = GAUCHE;
+        vitesse = 120;
+      } 
+      else {
+        direction = MARCHE_ARRIERE;
+        vitesse = 150;
+        allumerFeuxRecul = true;
       }
     }
   }
+  
+  if(distance < 10){
+    vitesse = 0;
+
+    if(calculer_temps_arret() == 0) {
+      buzzer.tone(500, 1000);
+    }
+    else if(calculer_temps_arret() > 15) {
+      buzzer.tone(500, 1000);
+      direction = MARCHE_ARRIERE;
+      vitesse = 150;
+      allumerFeuxRecul = true;
+    }
+  } 
+  else if (distance < 20) {
+    HEURE_ARRET = 0;
+    vitesse = 100;
+    allumerPhares = true;
+  }
+  else {
+    HEURE_ARRET = 0;
+  }
+
+  if(allumerPhares) {
+    colorer_leds(255, 255, 255, 12);
+  } 
+  else if(allumerFeuxRecul) {
+      colorer_leds(255, 0, 0, 12);
+  } 
+  else {
+      colorer_leds(0, 0, 0, 12);
+  }
+
+  se_deplacer(direction, vitesse);
+        
   Encoder_1.loop();
   Encoder_2.loop();
 }
