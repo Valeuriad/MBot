@@ -16,7 +16,12 @@ int GAUCHE = 3;
 int DROITE = 4;
 int MARCHE_ARRIERE = 2;
 
-MeLightSensor lightsensor_12(12);
+int SEUIL_LEDS_A_ALLUMER = 100;
+int SEUIL_LEDS_A_MAINTENIR_ALLUMEES = 700;
+int SEUIL_LEDS_A_ETEINDRE = 900;
+
+MeLightSensor capteurLumiere_1(12);
+MeLightSensor capteurLumiere_2(11);
 MeLineFollower capteurLigne(9);
 MeEncoderOnBoard Encoder_1(SLOT1);
 MeEncoderOnBoard Encoder_2(SLOT2);
@@ -76,12 +81,16 @@ void _delay(float seconds) {
   while(millis() < endTime) delay(10);
 }
 
-int etat_de_la_ligne() {
+int recuperer_etat_de_la_ligne() {
   return capteurLigne.readSensors();
 }
 
 int recuperer_distance() {
   return capteurObstacle.distanceCm();
+}
+
+int recuperer_luminosite() {  
+  return (capteurLumiere_1.read() + capteurLumiere_2.read()) / 2.0;
 }
 
 void colorer_leds(int rouge, int vert, int bleu, int nombreDeLeds) {
@@ -123,20 +132,21 @@ void loop() {
   float vitesse;
   int distance = recuperer_distance();
   int direction = TOUT_DROIT;
+  int etat_de_la_ligne = recuperer_etat_de_la_ligne();
   boolean allumerPhares = false;
   boolean allumerFeuxRecul = false;
 
-  if(etat_de_la_ligne() == GAUCHE_BLANC_DROIT_BLANC) {
+  if(etat_de_la_ligne == GAUCHE_BLANC_DROIT_BLANC) {
     direction = TOUT_DROIT;
     vitesse = 150;
   } 
   else {
-    if(etat_de_la_ligne() == GAUCHE_NOIR_DROIT_BLANC) {
+    if(etat_de_la_ligne == GAUCHE_NOIR_DROIT_BLANC) {
       direction = DROITE;
       vitesse = 120;
     } 
     else {
-      if(etat_de_la_ligne() == GAUCHE_BLANC_DROIT_NOIR) {
+      if(etat_de_la_ligne == GAUCHE_BLANC_DROIT_NOIR) {
         direction = GAUCHE;
         vitesse = 120;
       } 
@@ -148,6 +158,12 @@ void loop() {
     }
   }
   
+  int valeurLuminosite = recuperer_luminosite();
+  if (valeurLuminosite < SEUIL_LEDS_A_ALLUMER || 
+      (valeurLuminosite > SEUIL_LEDS_A_MAINTENIR_ALLUMEES && valeurLuminosite < SEUIL_LEDS_A_ETEINDRE )) {
+    allumerPhares = true;
+  }
+
   if(distance < 10){
     vitesse = 0;
 
@@ -170,11 +186,11 @@ void loop() {
     HEURE_ARRET = 0;
   }
 
-  if(allumerPhares) {
-    colorer_leds(255, 255, 255, 12);
-  } 
-  else if(allumerFeuxRecul) {
+  if(allumerFeuxRecul) {
       colorer_leds(255, 0, 0, 12);
+  }
+  else if(allumerPhares) {
+    colorer_leds(255, 255, 255, 12);
   } 
   else {
       colorer_leds(0, 0, 0, 12);
