@@ -23,7 +23,7 @@ MeEncoderOnBoard capteurDroit(SLOT2);
 MeLineFollower capteurLigne(9);
 MeUltrasonicSensor capteurObstacle(10);
 MeBuzzer buzzer;
-  
+
 int direction;
 float vitesse;
 
@@ -84,29 +84,27 @@ void klaxonner() {
 void executer_les_actions() {
   int leftSpeed = 0;
   int rightSpeed = 0;
-  
-  switch(direction) {
-    case DIRECTION_TOUT_DROIT:
-      leftSpeed = -vitesse;
-      rightSpeed = vitesse;
-      break;
-    case DIRECTION_MARCHE_ARRIERE:
-      leftSpeed = vitesse;
-      rightSpeed = -vitesse;
-      break;
-    case DIRECTION_GAUCHE:
-      leftSpeed = -vitesse;
-      rightSpeed = -vitesse;
-      break; 
-    case DIRECTION_DROITE:
-      leftSpeed = vitesse;
-      rightSpeed = vitesse;
-      break;
+
+  if (direction == DIRECTION_TOUT_DROIT) {
+    leftSpeed = -vitesse;
+    rightSpeed = vitesse;
+
+  } else if (direction == DIRECTION_MARCHE_ARRIERE) {
+    leftSpeed = vitesse;
+    rightSpeed = -vitesse;
+
+  } else if (direction == DIRECTION_GAUCHE) {
+    leftSpeed = -vitesse;
+    rightSpeed = -vitesse;
+
+  } else if (direction == DIRECTION_DROITE) {
+    leftSpeed = vitesse;
+    rightSpeed = vitesse;
   }
-    
+
   capteurGauche.setTarPWM(leftSpeed);
   capteurDroit.setTarPWM(rightSpeed);
-  
+
   capteurGauche.loop();
   capteurDroit.loop();
 }
